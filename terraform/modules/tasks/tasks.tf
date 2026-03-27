@@ -147,3 +147,17 @@ resource "aws_ecs_task_definition" "test_target" {
     }
   ])
 }
+
+resource "aws_ecs_service" "test_target" {
+  name            = "${var.project_prefix}-test-target"
+  cluster         = var.ecs_cluster_id
+  task_definition = aws_ecs_task_definition.test_target.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    subnets          = [var.public_subnet_id]
+    security_groups  = [aws_security_group.test_target.id]
+    assign_public_ip = true
+  }
+}

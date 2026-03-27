@@ -206,16 +206,14 @@ cat pentest-restful-report.json
 
 Uses the teacher-provided `test-target.js` deployed as a long-running Fargate service in the public subnet.
 
-### Step 1 — Start the test-target ECS task
+### Step 1 — Get the running test-target task ARN. The test-target runs as a persistent ECS Service started by Terraform — no manual run-task needed.
 
 ```bash
-TASK_ARN=$(aws ecs run-task \
+TASK_ARN=$(aws ecs list-tasks \
   --cluster $CLUSTER \
-  --task-definition $TEST_TARGET_TASK_DEF \
-  --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={subnets=[$PUBLIC_SUBNET],securityGroups=[$TEST_TARGET_SG],assignPublicIp=ENABLED}" \
+  --service-name security-hub-dev-test-target \
   --region us-east-1 \
-  --query "tasks[0].taskArn" \
+  --query "taskArns[0]" \
   --output text)
 
 echo "Task ARN: $TASK_ARN"
@@ -268,15 +266,6 @@ curl -s $API_URL/$FINDING_ID -H "x-api-key: $API_KEY"
 ```bash
 aws s3 cp s3://$ARTIFACTS_BUCKET/reports/$FINDING_ID/report.json ./pentest-target-report.json
 cat pentest-target-report.json
-```
-
-### Step 6 — Stop test-target when done (avoid charges)
-
-```bash
-aws ecs stop-task \
-  --cluster $CLUSTER \
-  --task $TASK_ARN \
-  --region us-east-1
 ```
 
 ---

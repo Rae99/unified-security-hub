@@ -232,13 +232,11 @@ function PentestForm() {
       <div className="bg-amber-50 border border-amber-200 rounded-lg px-4 py-3 space-y-1.5">
         <p className="text-xs font-semibold text-amber-800">Using Test Target?</p>
         <p className="text-xs text-amber-700">
-            The test-target is a deliberately vulnerable API deployed on ECS. Start it first, then paste the IP here.
+            The test-target is a deliberately vulnerable API running as a persistent ECS Service — no manual start needed. Just retrieve its public IP and paste it here.
         </p>
         <ol className="text-xs text-amber-700 list-decimal list-inside space-y-0.5">
-            <li>Run the ECS task via AWS CLI (see <code className="bg-amber-100 px-1 rounded">testing.md</code>)</li>
-            <li>Wait ~30s, get the public IP</li>
+            <li>Get the public IP via AWS CLI (see <code className="bg-amber-100 px-1 rounded">frontend-testing.md</code>)</li>
             <li>Enter <code className="bg-amber-100 px-1 rounded">http://&lt;public-ip&gt;:4000</code> above</li>
-            <li>Stop the task when done to avoid charges</li>
         </ol>
       </div>
 

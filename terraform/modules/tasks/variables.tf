@@ -49,3 +49,8 @@ variable "public_subnet_id" {
   description = "Public subnet ID — test-target runs here with a public IP"
   type        = string
 }
+
+variable "ecs_cluster_id" {
+  description = "ECS cluster ID for running the test-target service"
+  type        = string
+}

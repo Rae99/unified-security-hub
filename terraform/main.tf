@@ -74,6 +74,7 @@ module "tasks" {
   test_target_repo_url  = module.ecr.test_target_repo_url
   test_target_log_group = module.ecs.test_target_log_group_name
   public_subnet_id      = module.vpc.public_subnet_id
+  ecs_cluster_id        = module.ecs.cluster_id
 }
 
 module "sfn" {

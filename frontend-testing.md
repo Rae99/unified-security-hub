@@ -47,7 +47,7 @@ bash docs/script.sh
 
 ### Step 6 — Set frontend environment variables
 ```bash
-cd terraform
+cd terracd form
 
 API_KEY=$(aws apigateway get-api-key \
   --api-key $(terraform output -raw api_key_id) \
@@ -56,8 +56,8 @@ API_KEY=$(aws apigateway get-api-key \
 
 cat > ../frontend/.env << EOF
 VITE_USE_MOCK=false
-VITE_API_URL=$(terraform output -raw api_url)
-VITE_API_KEY=$API_KEY
+VITE_API_URL="$(terraform output -raw api_url)"
+VITE_API_KEY="$API_KEY"
 EOF
 
 cd ..
@@ -68,7 +68,7 @@ cd ..
 cd frontend
 npm install   # only needed first time
 npm run dev
-# Open http://localhost:5173
+# Open http://localhost:<your port>
 ```
 
 ---
@@ -118,20 +118,15 @@ zip test-sast.zip test-sast.js
 
 ## Test 4 — Pentest: Test Target (Intentionally Vulnerable API)
 
-### Start test-target ECS task
+### The test-target runs as a persistent ECS Service — no manual run-task needed
 ```bash
 CLUSTER=$(cd terraform && terraform output -raw cluster_name)
-PUBLIC_SUBNET=$(cd terraform && terraform output -raw public_subnet_id)
-TEST_TARGET_SG=$(cd terraform && terraform output -raw test_target_security_group_id)
-TEST_TARGET_TASK_DEF=$(cd terraform && terraform output -raw test_target_task_definition_arn | awk -F'/' '{print $2}' | awk -F':' '{print $1}')
 
-TASK_ARN=$(aws ecs run-task \
+TASK_ARN=$(aws ecs list-tasks \
   --cluster $CLUSTER \
-  --task-definition $TEST_TARGET_TASK_DEF \
-  --launch-type FARGATE \
-  --network-configuration "awsvpcConfiguration={subnets=[$PUBLIC_SUBNET],securityGroups=[$TEST_TARGET_SG],assignPublicIp=ENABLED}" \
+  --service-name security-hub-dev-test-target \
   --region us-east-1 \
-  --query "tasks[0].taskArn" \
+  --query "taskArns[0]" \
   --output text)
 
 sleep 30
@@ -155,10 +150,6 @@ echo "Test-Target URL: http://$PUBLIC_IP:4000"
 3. Click **Start Pentest**
 4. Wait ~2-3 min — check Dashboard for status
 
-### Stop test-target when done (avoid charges)
-```bash
-aws ecs stop-task --cluster $CLUSTER --task $TASK_ARN --region us-east-1
-```
 
 ---
 
