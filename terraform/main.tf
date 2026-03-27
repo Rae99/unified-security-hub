@@ -53,7 +53,7 @@ module "lambda" {
   dynamodb_table_arn  = module.dynamodb.table_arn
   s3_artifacts_name   = module.s3.artifacts_bucket_name
   s3_artifacts_arn    = module.s3.artifacts_bucket_arn
-  sfn_arn             = var.sfn_arn
+  sfn_arn             = module.sfn.state_machine_arn
   lambda_zip_path     = var.lambda_zip_path
   lab_role_arn = var.lab_role_arn
 }
@@ -70,6 +70,10 @@ module "tasks" {
   pentest_log_group = module.ecs.pentest_log_group_name
   vpc_id            = module.vpc.vpc_id
   private_subnet_ids = module.vpc.private_subnet_ids
+  # Test target additions
+  test_target_repo_url  = module.ecr.test_target_repo_url
+  test_target_log_group = module.ecs.test_target_log_group_name
+  public_subnet_id      = module.vpc.public_subnet_id
 }
 
 module "sfn" {
