@@ -190,6 +190,7 @@ unified-security-hub/
 │   ├── script.sh              # Build & push all three Docker images to ECR
 │   ├── ecr-setup.md           # ECR setup reference
 ├── testing.md                 # End-to-end testing guide
+├── frontend-testing.md        # Frontend testing guide
 └── README.md
 ```
 

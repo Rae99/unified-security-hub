@@ -75,7 +75,7 @@ resource "aws_sfn_state_machine" "scanner" {
         # Store ECS output in $.taskResult — preserves original input fields
         ResultPath = "$.taskResult"
         Next  = "UpdateStatusCompleted"
-        Catch = [{ ErrorEquals = ["States.ALL"], Next = "ScanFailed" }]
+        Catch = [{ ErrorEquals = ["States.ALL"], Next = "ScanFailed", ResultPath = "$.error" }]
         Retry = [{ ErrorEquals = ["States.ALL"], MaxAttempts = 2, IntervalSeconds = 10 }]
       }
 
@@ -110,7 +110,7 @@ resource "aws_sfn_state_machine" "scanner" {
         # Store ECS output in $.taskResult — preserves original input fields
         ResultPath = "$.taskResult"
         Next  = "UpdateStatusCompleted"
-        Catch = [{ ErrorEquals = ["States.ALL"], Next = "ScanFailed" }]
+        Catch = [{ ErrorEquals = ["States.ALL"], Next = "ScanFailed", ResultPath = "$.error" }]
         Retry = [{ ErrorEquals = ["States.ALL"], MaxAttempts = 2, IntervalSeconds = 10 }]
       }
 

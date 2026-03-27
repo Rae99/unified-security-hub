@@ -1,5 +1,51 @@
 # Unified Security Hub — Testing Guide
 
+## First Time Setup
+
+> Only needed once per fresh clone or after `terraform destroy`.
+
+### 1. Export AWS credentials
+From Learner Lab → AWS Details → copy and export:
+```bash
+export AWS_ACCESS_KEY_ID=<your_key>
+export AWS_SECRET_ACCESS_KEY=<your_secret>
+export AWS_SESSION_TOKEN=<your_token>
+
+aws sts get-caller-identity
+```
+
+### 2. Update lab_role_arn
+```bash
+# Get current account ID
+aws sts get-caller-identity --query Account --output text
+
+# Update terraform/terraform.tfvars:
+# lab_role_arn = "arn:aws:iam::<ACCOUNT_ID>:role/LabRole"
+```
+
+### 3. Package Lambda
+```bash
+cd api/lambda
+npm install
+zip -r function.zip .
+cd ../..
+```
+
+### 4. Provision infrastructure
+```bash
+cd terraform
+terraform init
+terraform apply
+cd ..
+```
+
+### 5. Build & push Docker images
+```bash
+bash docs/script.sh
+```
+
+---
+
 ## Before Every Test Session
 
 ### 1. Refresh AWS credentials (expire every ~4 hours)
@@ -294,6 +340,7 @@ echo "Table name: $TABLE"
 | `Forbidden` on API call | Wrong or empty `$API_KEY` | Re-run Step 2 of "Before Every Test Session" |
 | `Role is not valid` on terraform apply | `lab_role_arn` account ID stale | Run `aws sts get-caller-identity`, update `terraform.tfvars`, re-apply |
 | Step Functions `$.severity not found` | Severity not in execution context | `GetJobResult` state reads it back from DynamoDB after container exits |
+| Scan stuck at RUNNING | Container failed to start | Check `aws logs tail $SAST_LOG --follow` |
 
 ---
 
