@@ -53,7 +53,7 @@ module "lambda" {
   dynamodb_table_arn  = module.dynamodb.table_arn
   s3_artifacts_name   = module.s3.artifacts_bucket_name
   s3_artifacts_arn    = module.s3.artifacts_bucket_arn
-  sfn_arn             = var.sfn_arn
+  sfn_arn             = module.sfn.state_machine_arn
   lambda_zip_path     = var.lambda_zip_path
   lab_role_arn = var.lab_role_arn
 }
