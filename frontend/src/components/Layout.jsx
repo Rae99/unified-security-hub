@@ -72,6 +72,13 @@ function PageTitle() {
     '/dashboard': 'Dashboard',
     '/scan/new':  'New Scan',
   }
+  // [LEARN] Object.entries() turns the object into [[key, value], ...] pairs.
+  // .find() returns the first pair where the path starts with that key.
+  // startsWith (not ===) means '/scan/new' still matches if there's more after it.
+  // ?.[1] uses optional chaining — if find() returns nothing, this gives undefined
+  // instead of crashing. [1] picks the value from the [key, value] pair.
+  // ?? 'Scan Report' is the fallback for /scan/:id report pages, which aren't
+  // in the titles map.
   const title = Object.entries(titles).find(([k]) => pathname.startsWith(k))?.[1]
     ?? 'Scan Report'
   return <h1 className="text-base font-semibold text-gray-800">{title}</h1>

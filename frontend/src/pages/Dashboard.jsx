@@ -29,7 +29,11 @@ export default function Dashboard() {
     }
   }
 
-  // Initial load + polling every 10s
+  // [LEARN] Polling pattern: setInterval calls fetchJobs every 10s so the table
+  // stays fresh without the user manually refreshing.
+  // The returned cleanup function runs when the component unmounts (e.g. user
+  // navigates away). Without clearInterval, the timer keeps running in the
+  // background — a memory leak that fires API calls to a dead component.
   useEffect(() => {
     fetchJobs()
     const timer = setInterval(fetchJobs, POLL_INTERVAL)

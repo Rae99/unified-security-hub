@@ -17,6 +17,9 @@ export default function ReportDetail() {
   useEffect(() => {
     const load = async () => {
       try {
+        // [LEARN] Promise.all fires both fetches at the same time and waits for
+        // both to finish. Sequential awaits would be ~2× slower since getJob
+        // and getReport don't depend on each other.
         const [j, r] = await Promise.all([getJob(id), getReport(id)])
         setJob(j)
         setReport(r)
@@ -32,7 +35,9 @@ export default function ReportDetail() {
   if (loading) return <div className="text-sm text-gray-400 py-12 text-center">Loading report...</div>
   if (!report)  return <div className="text-sm text-gray-400 py-12 text-center">Report not available.</div>
 
-  // Flatten all findings from all files
+  // [LEARN] SAST report.results looks like: { "src/index.js": [finding, ...], ... }
+  // Object.values() pulls out the arrays, .flat() merges them into one list.
+  // The ?? {} guard handles the case where results is missing (e.g. empty scan).
   const allFindings = Object.values(report.results ?? {}).flat()
 
   // Group by severity
