@@ -72,6 +72,23 @@ Lists jobs. No simple "scan all" in DynamoDB — must query by an indexed field.
 ### GET /scan-jobs/{findingId} (line 104)
 Uses `QueryCommand` (not `GetItemCommand`) because we only have the PK (`finding_id`) and not the SK (`timestamp`). Query finds it; Get requires both keys.
 
+**DynamoDB keys:**
+- `PK` = Partition Key — determines which partition (shard) the data lives in. NOT unique alone; multiple records can share the same PK.
+- `SK` = Sort Key — distinguishes records within the same partition. Orders them and makes them individually addressable.
+- `PK + SK together` = the true composite primary key — this combination must be unique.
+
+```
+finding_id = "abc-123"  ← same PK
+  timestamp = "2024-01-01"  ← record 1
+  timestamp = "2024-01-02"  ← record 2
+```
+
+**GetItemCommand vs QueryCommand:**
+- `GetItemCommand` — fetches exactly one record, requires both PK + SK (the full composite key).
+- `QueryCommand` — searches by condition, only needs PK. Returns an array — even a single match comes back as `Items[0]`.
+
+Here we only have `findingId` (PK) but not `timestamp` (SK), so `GetItemCommand` is not an option.
+
 ### POST /scan-jobs/{findingId}/start (line 121)
 Triggers the actual scan:
 1. Look up the job, verify it's `PENDING`
