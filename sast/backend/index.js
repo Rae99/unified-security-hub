@@ -105,6 +105,10 @@ const main = async () => {
     const resultsByFile = scanDirectory(srcDir);
     const allVulns      = Object.values(resultsByFile).flat();
     const severity      = topSeverity(allVulns);
+    // scanDirectory returns:  { "app.js": [{ id: "XSS" }, { id: "SQL_INJECTION" }], "utils.js": [{ id: "HARDCODED_SECRET" }] }
+    // Object.values →         [ [{ id: "XSS" }, { id: "SQL_INJECTION" }], [{ id: "HARDCODED_SECRET" }] ]
+    // .flat() →               [ { id: "XSS" }, { id: "SQL_INJECTION" }, { id: "HARDCODED_SECRET" } ]
+    // topSeverity →           "HIGH"  (first match in ["HIGH", "MEDIUM", "LOW"])
 
     // 6. Build report
     const report = {

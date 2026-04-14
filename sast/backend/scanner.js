@@ -159,6 +159,10 @@ const vulnerabilityRules = [
 ];
 
 // Get line number from character index
+// substring(0, index) is exclusive — takes everything BEFORE the match
+// splitting by \n and counting segments gives the line number (1-based)
+// e.g. "line1\nline2\n".split('\n') → ["line1", "line2", ""] → length 3
+// the trailing empty string from the final \n naturally makes the count correct
 const getLineNumber = (code, index) => {
   return code.substring(0, index).split('\n').length;
 };
@@ -173,15 +177,22 @@ const getLineContent = (code, lineNumber) => {
 export const scanCode = (code, filename = 'untitled.js') => {
   const vulnerabilities = [];
 
+  // outer loop: each vulnerability type (XSS, SQL injection, ...)
+  // inner loop: each pattern within a rule (different ways to write the same vulnerability)
   for (const rule of vulnerabilityRules) {
     for (const pattern of rule.patterns) {
       let match;
+      // re-create RegExp each iteration to reset lastIndex to 0
+      // RegExp objects track lastIndex internally; reusing the same object would
+      // start searching from where the last pattern left off, missing earlier matches
       const regex = new RegExp(pattern.regex.source, pattern.regex.flags);
-      
+
+      // while (not if) — same pattern may appear multiple times in the same file
+      // regex.exec returns the match object, or null when no more matches
       while ((match = regex.exec(code)) !== null) {
         const lineNumber = getLineNumber(code, match.index);
         const lineContent = getLineContent(code, lineNumber);
-        
+
         vulnerabilities.push({
           id: rule.id,
           name: rule.name,
@@ -190,7 +201,9 @@ export const scanCode = (code, filename = 'untitled.js') => {
           message: rule.message,
           file: filename,
           line: lineNumber,
+          // column: distance from start of line = match position - position of preceding \n
           column: match.index - code.lastIndexOf('\n', match.index - 1),
+          // evidence: the matched line, truncated to 100 chars for display
           evidence: lineContent.length > 100 ? lineContent.substring(0, 100) + '...' : lineContent
         });
       }
@@ -228,7 +241,10 @@ export const scanDirectory = (dirpath, extensions = ['.js', '.mjs', '.cjs', '.ts
   const results = {};
 
   const scanDir = (currentPath) => {
-    const entries = fs.readdirSync(currentPath, { withFileTypes: true });
+    // withFileTypes: true returns Dirent objects instead of plain strings
+  // enables entry.isDirectory() / entry.isFile() without extra fs.statSync calls
+  // readdirSync only returns the current level — recursion below handles subdirectories
+  const entries = fs.readdirSync(currentPath, { withFileTypes: true });
 
     for (const entry of entries) {
       const fullPath = path.join(currentPath, entry.name);
@@ -238,7 +254,7 @@ export const scanDirectory = (dirpath, extensions = ['.js', '.mjs', '.cjs', '.ts
         if (entry.name === 'node_modules' || entry.name.startsWith('.')) {
           continue;
         }
-        scanDir(fullPath);
+        scanDir(fullPath); // Recurse into subdirectory
       } else if (entry.isFile()) {
         const ext = path.extname(entry.name).toLowerCase();
         if (extensions.includes(ext)) {
